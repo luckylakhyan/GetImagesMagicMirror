@@ -1,12 +1,34 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+<style>
+.main { width: 750px; height: 350px; color: rgb(5, 1, 0); position: absolute; border: 3px solid lightgreen; background-image: url("https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Google_Images_2015_logo.svg/1200px-Google_Images_2015_logo.svg.png"); -webkit-background-size: cover; }
+</style>
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <div style="background-image:url('/home/getimage');width:700px;height:700px;-webkit-background-size: cover;-moz-background-size: cover;-o-background-size: cover;background-size: cover;">
+    <span id="dynamicContentContainer"></span>
+    <div id="divimage" style="width: 700px;height: 700px;-webkit-background-size: cover;-moz-background-size: cover;-o-background-size: cover;background-size: cover;">
 
-                                                  testurl
+
     </div>
+    <script>
+         $(document).ready(function () {
+            var result = null;
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", '/home/GetImageUrl', false);
+            xmlhttp.send();
+            if (xmlhttp.status == 200) {
+                resultt = JSON.parse(xmlhttp.responseText);
+                var idiv = document.getElementById("divimage");
+                var info = document.getElementById("dynamicContentContainer");
+                
+                console.log("result", resultt.result);
+                idiv.style.backgroundImage = "url('"+ resultt.result +"')";
+                info.innerHTML = resultt.datetaken;
+            }
+
+        })
+    </script>
 </div>

@@ -16,10 +16,9 @@ namespace GetImage.Controllers
         private readonly ILogger<HomeController> _logger;
         private GetimagesData getimagesData;
         // public HomeController(ILogger<HomeController> logger, GetimagesData Imagesdata)
+
         public HomeController(GetimagesData Imagesdata)
-
         {
-
             getimagesData = Imagesdata;
         }
 
@@ -38,52 +37,10 @@ namespace GetImage.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
-        public FileContentResult Getimage()
-        {
-            try
-            {
-
-                if (getimagesData.ImageNextRefresh < DateTime.Now)
-                {
-                    if (string.IsNullOrEmpty(getimagesData.ImageKeyNext))
-                    {
-                        var pics = getimagesData.ImageList.Where(w => !w.Value);
-                        var picid = new Random().Next(0, pics.Count());
-                        getimagesData.ImageKeyCurrent = pics.ElementAt(picid).Key;
-                        getimagesData.ImageKeyNext = getimagesData.ImageKeyCurrent;
-                        //check if first file is nef
-                        getimagesData.CreateJpeg(getimagesData.ImageKeyCurrent).GetAwaiter().GetResult() ;
-                    }
-                    else
-                    {
-                        getimagesData.ImageKeyCurrent = getimagesData.ImageKeyNext;
-                    }
-
-                    getimagesData.SetShown(getimagesData.ImageKeyCurrent);
-                    var nextTimesetup = DateTime.Now.AddSeconds(-1 * DateTime.Now.Second);
-                    getimagesData.ImageNextRefresh = nextTimesetup.AddMinutes(getimagesData.ImageRefreshInterval);
-
-                }
-                byte[] imgg = null;
-
-                var segmantes = getimagesData.ImageKeyCurrent.Split('\\');
-                var fname = segmantes[segmantes.Length - 1];
-                fname = getimagesData.ContentRootPath + "\\wwwroot\\Temp\\" + fname.Replace("nef", "jpg", StringComparison.CurrentCultureIgnoreCase);
-                imgg = System.IO.File.ReadAllBytes(fname);
-                return File(imgg, "images/jpg");
-            }
-            catch (Exception ex)
-            {
-
-                return null;
-            }
-
-        }
         public IActionResult RefreshImage()
         {
             getimagesData.ImageList.Clear();
-            getimagesData.GetImagesList();
+            getimagesData.RefreshAll();
             return Json("true");
         }
         public IActionResult RefreshImageAddFolder(string id)
@@ -91,9 +48,19 @@ namespace GetImage.Controllers
             getimagesData.GetImagesList(id);
             return Json("true");
         }
-        public string GetImageFolder()
+
+        public ActionResult GetImageUrl()
         {
-            return getimagesData.ImageKeyCurrentFolder;
+            var segmantes = getimagesData.GetRandomImage().Split('\\');
+            byte[] imgg = null;
+            var fname = segmantes[segmantes.Length - 1];
+            fname = getimagesData.ContentRootPath + "\\wwwroot\\Temp\\" + fname.Replace("nef", "jpg", StringComparison.CurrentCultureIgnoreCase);
+            imgg = System.IO.File.ReadAllBytes(fname);
+
+            var base64 = Convert.ToBase64String(imgg);
+            var imgSrc = String.Format("data:image/gif;base64,{0}", base64);
+
+            return Json(new { result = imgSrc, Datetaken = getimagesData.ImageDateTakenCurrent });
         }
     }
 

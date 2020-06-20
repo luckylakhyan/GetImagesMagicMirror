@@ -1,51 +1,174 @@
 ﻿using ImageMagick;
-using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 
 namespace GetImage
 {
     public class GetimagesData
     {
-        private Dictionary<string, bool> imageList;
+        #region "application vars"
         public DateTime SetupTimeStamp { get; set; }
         public string ApplicationName { get; set; }
         public string ContentRootPath { get; set; }
         public string EnvironmentName { get; set; }
         public string WebRootPath { get; set; }
 
+        #endregion
 
+        #region "Imagelist"
 
         public string imageRootPath = string.Empty;
 
-        public int ImageRefreshInterval { get; set; }
+        private Dictionary<string, bool> imageList;
+        public async Task<bool> GetImagesList(string dirpath = null)
+        {
+            dirpath ??= imageRootPath;
+            foreach (var directory in Directory.GetDirectories(dirpath).AsEnumerable())
+            {
+                GetImagesList(directory).GetAwaiter().GetResult();
+            }
+            var files = Directory.GetFiles(dirpath);
+            foreach (var file in files)
+            {
+                ImageList.Add(file, false);
+            }
+            return true;
+        }
+        public void RefreshAll()
+        {
+            imageList.Clear();
+            GetImagesList(null);
+        }
+        public void RefreshAddFolder(string folder)
+        {
+            GetImagesList(folder);
+        }
+        #endregion
 
-        public DateTime ImageNextRefresh { get; set; }
-
-        public string ImageKeyLast { get; set; }
-        public string ImageKeyCurrent { get; set; }
-        public string ImageKeyCurrentFolder
+        #region "tempfolder"
+        public string TempFolder
         {
             get
             {
-                var imagepath = ImageKeyCurrent.Split('\\');
-                if (imagepath.Length > 2)
+                var dpath = ContentRootPath + "\\wwwroot\\Temp\\";
+                if (!Directory.Exists(dpath))
                 {
-
-                    return imagepath[imagepath.Length - 2];
+                    Directory.CreateDirectory(dpath);
                 }
-                else
-                {
-                    return "Root";
-                }
+                return dpath;
             }
         }
+        public async void CleanTempFolder()
+        {
+            foreach (string file in Directory.GetFiles(TempFolder))
+            {
+                try
+                {
+                    var cfile = (ImageKeyCurrent ?? "").ToLower().Replace("nef", "jpg").Split('\\');
+                    var nfile = (ImageKeyNext ?? "").ToLower().Replace("nef", "jpg").Split('\\');
+
+                    if (!file.ToLower().EndsWith(cfile[cfile.Length - 1]) && !file.ToLower().EndsWith(nfile[nfile.Length - 1]))
+                    {
+                        File.Delete(file);
+                    }
+                }
+                catch (Exception) { }
+            }
+        }
+        #endregion
+        public string GetRandomImage()
+        {
+            try
+            {
+                if (ImageNextRefresh < DateTime.Now)
+                {
+                    if (string.IsNullOrEmpty(ImageKeyNext))
+                    {
+                        ImageKeyNext = GetRandomImageNext().GetAwaiter().GetResult();
+                    }
+                    ImageKeyCurrent = ImageKeyNext;
+                    ImageDateTakenCurrent = ImageDateTakenNext;
+                    var nextTimesetup = DateTime.Now.AddSeconds(-1 * DateTime.Now.Second);
+                    ImageNextRefresh = nextTimesetup.AddMinutes(ImageRefreshInterval);
+                    GetRandomImageNext();
+                }
+            }
+            catch (Exception)
+            {
+
+                return null;
+            }
+            return ImageKeyCurrent;
+        }
+
+        public async Task<string> GetRandomImageNext()
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(ImageKeyCurrent))
+                {
+                    imageList.Remove(ImageKeyCurrent);
+                    if (imageList.Count() < 1)
+                    {
+                        GetImagesList();
+                    }
+                }
+                var picIndex = new Random().Next(0, imageList.Count());
+                ImageKeyNext = imageList.ElementAt(picIndex).Key;
+                var fname = SaveLocalJpeg(ImageKeyNext);
+                ResizeImage(fname);
+
+                return ImageKeyNext;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+
+        public string SaveLocalJpeg(string sourceFile)
+        {
+            CleanTempFolder();
+            var segmantes = sourceFile.Split('\\');
+            var fname = segmantes[segmantes.Length - 1];
+            fname = TempFolder + fname.Replace("nef", "jpg", StringComparison.CurrentCultureIgnoreCase);
+            if (sourceFile.EndsWith("nef", StringComparison.CurrentCultureIgnoreCase))
+            {
+                using var image = new MagickImage(sourceFile);
+                image.Write(fname);
+            }
+            else
+            {
+                File.Copy(sourceFile, fname, true);
+            }
+
+            return fname;
+        }
+
+
+        List<string> KnownFolderNames = new List<string>()
+            {
+               "raw",
+               "folder",
+               "jpg",
+               "jpeg" ,
+               "100ncd90",
+               "101nd700",
+               "d90",
+               "d700"
+
+            };
+
+        public int ImageRefreshInterval { get; set; }
+        public DateTime ImageNextRefresh { get; set; }
+        public string ImageKeyCurrent { get; set; }
+        public string ImageDateTakenCurrent { get; set; }
         public string ImageKeyNext { get; set; }
+        public string ImageDateTakenNext { get; set; }
         public Dictionary<string, bool> ImageList
         {
             get
@@ -57,78 +180,6 @@ namespace GetImage
                 return imageList;
 
             }
-        }
-        public void GetImagesList(string dirpath = null)
-        {
-            dirpath = dirpath ?? imageRootPath;
-            foreach (var directory in System.IO.Directory.GetDirectories(dirpath).AsEnumerable())
-            {
-                GetImagesList(directory);
-            }
-            var files = System.IO.Directory.GetFiles(dirpath);
-            foreach (var file in files)
-            {
-                ImageList.Add(file, false);
-            }
-
-        }
-        public async void SetShown(string key)
-        {
-            ImageList.Remove(key);
-            if (imageList.Count < 1)
-            {
-                GetImagesList();
-            }
-            var picid = new Random().Next(0, ImageList.Count());
-            ImageKeyNext = ImageList.ElementAt(picid).Key;
-            CreateJpeg(ImageKeyNext);
-
-        }
-        public async Task<bool> CreateJpeg(string sourceFile)
-        {
-            //D:\Apps\ImageMagick\magick.exe
-
-            try
-            {
-
-                var dpath = ContentRootPath + "\\wwwroot\\Temp\\";
-                if (!Directory.Exists(dpath))
-                {
-                    Directory.CreateDirectory(dpath);
-                }
-                foreach (string file in Directory.GetFiles(dpath))
-                {
-                    var cfile = ImageKeyCurrent.ToLower().Replace("nef", "jpg").Split('\\');
-                    var nfile = ImageKeyNext.ToLower().Replace("nef", "jpg").Split('\\');
-
-                    if (!file.ToLower().EndsWith(cfile[cfile.Length - 1]) && !file.ToLower().EndsWith(nfile[nfile.Length - 1]))
-                    {
-                        File.Delete(file);
-                    }
-                    //FileInfo fi = new FileInfo(file);
-                    //if (fi.LastAccessTime < DateTime.Now.AddMinutes(-10))
-                    //    fi.Delete();
-                }
-                var segmantes = sourceFile.Split('\\');
-                var fname = segmantes[segmantes.Length - 1];
-
-
-                fname = dpath + fname.Replace("nef", "jpg", StringComparison.CurrentCultureIgnoreCase);
-                if (sourceFile.EndsWith("nef", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    Savenef(sourceFile, fname);
-                }
-                else
-                {
-                    File.Copy(sourceFile, fname, true);
-                }
-                ResizeImage(fname);
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-            return true;
         }
         public void Savenef(string sourcefile, string targetfile)
         {
@@ -158,8 +209,16 @@ namespace GetImage
                     settings.Width = 1920;
                     settings.Height = image.Height / sizeratio;
                 }
+                try
+                {
+                    ImageDateTakenNext = image.GetAttribute("exif:DateTime");
+                    if (string.IsNullOrEmpty(ImageDateTakenNext))
+                    {
 
-
+                        ImageDateTakenNext = GetImageDatefromFolderName();
+                    }
+                }
+                catch (Exception) { }
                 image.Resize((int)settings.Width, (int)settings.Height);
                 switch (image.Orientation)
                 {
@@ -195,6 +254,17 @@ namespace GetImage
                 image.Orientation = OrientationType.TopLeft;
                 image.Write(targetfile);
             }
+
+        }
+        public string GetImageDatefromFolderName()
+        {
+            var imagepath = ImageKeyNext.Split('\\');
+            var valuetoreturn = imagepath[imagepath.Length - 2];
+            if (KnownFolderNames.Contains(valuetoreturn.ToLower()))
+            {
+                valuetoreturn = imagepath[imagepath.Length - 3];
+            }
+            return valuetoreturn;
         }
     }
 }

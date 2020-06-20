@@ -55,8 +55,8 @@ namespace GetImage
                 options.AddPolicy(name: MyAllowSpecificOrigins,
             builder =>
             {
-                builder.WithOrigins("http://winserver:8080",
-                                    "http://winserver:8085");
+                builder.WithOrigins(Configuration["hosturl1"],
+                                    Configuration["hosturl2"]);
             });
             });
             services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<GetimagesData>>().Value);
