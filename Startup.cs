@@ -32,7 +32,7 @@ namespace GetImage
             {
                 _webHostEnvironment = (IWebHostEnvironment)tservice.ImplementationInstance;
             }
-            Action<GetimagesData> imageData = (opt =>
+            Action<GetMirrorData> imageData = (opt =>
             {
                 opt.SetupTimeStamp = DateTime.Now;
                 opt.ApplicationName = _webHostEnvironment != null ? _webHostEnvironment.ApplicationName : "";
@@ -44,7 +44,7 @@ namespace GetImage
                
                 opt.ImageNextRefresh = DateTime.Now.AddMinutes(-100);
 
-                opt.GetImagesList();
+                opt.GetImagesList().GetAwaiter().GetResult();
 
 
             });
@@ -59,7 +59,7 @@ namespace GetImage
                                     Configuration["hosturl2"]);
             });
             });
-            services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<GetimagesData>>().Value);
+            services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<GetMirrorData>>().Value);
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddControllersWithViews();
         }
@@ -84,7 +84,7 @@ namespace GetImage
             app.UseRouting();
             app.UseCors(MyAllowSpecificOrigins);
             app.UseAuthorization();
-
+          
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

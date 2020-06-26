@@ -1,34 +1,153 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "MagicMirror²";
 }
-<style>
-.main { width: 750px; height: 350px; color: rgb(5, 1, 0); position: absolute; border: 3px solid lightgreen; background-image: url("https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Google_Images_2015_logo.svg/1200px-Google_Images_2015_logo.svg.png"); -webkit-background-size: cover; }
-</style>
+<script src="~/js/weather.js"></script>
+<script src="~/js/Events.js"></script>
+<script src="~/js/NewsFeedrss.js"></script>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <span id="dynamicContentContainer"></span>
-    <div id="divimage" style="width: 700px;height: 700px;-webkit-background-size: cover;-moz-background-size: cover;-o-background-size: cover;background-size: cover;">
-
-
+<div class="region fullscreen below">
+    <div class="container" style="display: block;">
+        <div id="module_1_MMM-NassPhotos" class="module MMM-NassPhotos MMM-NassPhotos" style="transition: opacity 0.05s ease 0s; opacity: 1; position: static;">
+            <header class="module-header" style="display: none;">undefined</header>
+            <div class="module-content">
+                <div id="NassPhoto">
+                    <div id="NassPhoto_back"></div>
+                    <div id="NassPhoto_main"></div>
+                    <div id="NassPhoto_info"><span id="pictimestamp"></span></div>
+                </div>
+            </div>
+        </div>
     </div>
-    <script>
-         $(document).ready(function () {
-            var result = null;
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("GET", '/home/GetImageUrl', false);
-            xmlhttp.send();
-            if (xmlhttp.status == 200) {
-                resultt = JSON.parse(xmlhttp.responseText);
-                var idiv = document.getElementById("divimage");
-                var info = document.getElementById("dynamicContentContainer");
-                
-                console.log("result", resultt.result);
-                idiv.style.backgroundImage = "url('"+ resultt.result +"')";
-                info.innerHTML = resultt.datetaken;
-            }
-
-        })
-    </script>
 </div>
+<div class="region top bar">
+    <div class="container" style="display: block;"><div id="module_1_updatenotification" class="module updatenotification updatenotification"><header class="module-header" style="display: none;">undefined</header><div class="module-content"><div></div></div></div></div>
+    <div class="region top left">
+        <div class="container" style="display: block;">
+            <div id="module_2_clock" class="module clock clock">
+                <header class="module-header" style="display: none;">undefined</header>
+                <div class="module-content">
+                    <div>
+                        <div class="date normal medium">
+                            <span id="cdate"></span>
+                        </div>
+                        <div class="time bright large light">
+                            <span id="crnthours">01</span>:
+                            <span id="crntMints">01</span>
+                            <sup id="crntSecnd" class="dimmed">01</sup>
+                            <span id="crntampm">Am</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="module_3_calendar" class="module calendar calendar" style="transition: opacity 1s ease 0s; opacity: 1; position: static;">
+                <header class="module-header" style="">
+                    <span id="Calenderheader"></span>
+                </header>
+                <div class="module-content">
+                    <table id="Calendertable" class="small">
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="region top right">
+        <div class="container" style="display: block;">
+            <div id="module_4_currentweather" class="module currentweather currentweather" style="transition: opacity 0.5s ease 0s; opacity: 1; position: static;">
+                <header class="module-header" style="display: none;">undefined</header>
+                <div class="module-content">
+                    <div class="large">
+                        <div class="normal medium">
+                            <i id="weatherwindIcon" class="wi wi-wind dimmed"></i>
+                            <span id="weatherwindspeed">-2</span>
+                            <sup id="weatherwindDir">-SW</sup>
+                            <span>&nbsp;</span>
+                            <span id="weatherSunicon" class="wi dimmed wi-sunset"></span>
+                            <span id="weatherSunTime"> -9:55 pm</span>
+                        </div>
+                        <div class="light">
+                            <div id="weatherweathericon" class="wi weathericon"></div>
+                            <span id="weathertemprature" class="bright"> -16.6°</span>
+                        </div>
+                        <div class="normal medium">
+                            <span class="dimmed">Feels like <span id="weatherfeelslike">-17°</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="module_5_weatherforecast" class="module weatherforecast weatherforecast" style="transition: opacity 0.5s ease 0s; opacity: 1; position: static;">
+                <header id="weatherforecastheadere" class="module-header" style="">Weather Forecast Calgary, CA</header>
+                <div class="module-content">
+                    <table id="weatherforecasttable" class="small">
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="region bottom bar">
+    <div class="container" style="display: block;">
+        <div id="module_6_newsfeed" class="module newsfeed newsfeed" style="transition: opacity 1.25s ease 0s; opacity: 1; position: static;">
+            <header class="module-header" style="display: none;">undefined</header><div class="module-content">
+                <div>
+                    <div class="newsfeed-source light small ">
+                        <span id="newsfeedHeader"> CNN News, 4 hours ago:</span>
+                    </div>
+                    <div class="newsfeed-title bright medium light">
+                        <span id="newsfeednews">Disney announces major change to Splash Mountain ride after outcry</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    function PhotoRefresh() {
+        $.get("/home/GetImageUrl", function (data, status) {
+            resultt = data;
+
+            var idivback = document.getElementById("NassPhoto_back");
+            var idivmain = document.getElementById("NassPhoto_main");
+            var info = document.getElementById("pictimestamp");
+            idivback.style.backgroundImage = "url('" + resultt.result + "')";
+            idivmain.style.backgroundImage = "url('" + resultt.result + "')";
+            info.innerHTML = resultt.datetaken;
+            setTimeout("PhotoRefresh()", 20000);
+        });
+    }
+    function ClockShow() {
+
+        var d = moment().format('dddd MMMM D, YYYY; hh:mm:ss a').split(';');
+
+        document.getElementById('cdate').innerHTML = d[0];
+
+        var tm = d[1].split(' ');
+        var timem = tm[1].split(':');
+        document.getElementById('crnthours').innerHTML = timem[0];
+        document.getElementById('crntMints').innerHTML = timem[1];
+        document.getElementById('crntSecnd').innerHTML = timem[2];
+        document.getElementById('crntampm').innerHTML = tm[2];
+        setTimeout('ClockShow()', 1000);
+    }
+    function checkTime(i) {
+        if (i < 10) {
+            i = "0" + i;
+        }
+        return i;
+    }
+    $(document).ready(function () {
+        var result = null;
+        ClockShow();
+        PhotoRefresh();
+        GetEvents();
+        Getweather();
+        GetweatherForecast();
+        GetNewsFeed();
+
+    })
+</script>
+

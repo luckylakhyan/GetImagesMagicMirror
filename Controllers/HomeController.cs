@@ -14,10 +14,10 @@ namespace GetImage.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private GetimagesData getimagesData;
+        private GetMirrorData getimagesData;
         // public HomeController(ILogger<HomeController> logger, GetimagesData Imagesdata)
 
-        public HomeController(GetimagesData Imagesdata)
+        public HomeController(GetMirrorData Imagesdata)
         {
             getimagesData = Imagesdata;
         }
