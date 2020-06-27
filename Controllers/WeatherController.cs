@@ -14,8 +14,8 @@ namespace TinnyMagicMiror.Controllers
 
         string weatherApiBase = "https://api.openweathermap.org/data/2.5/weather?id={0}&units={1}&lang={2}&APPID={3}";
         string weatherforcastapi = "https://api.openweathermap.org/data/2.5/forecast/daily?id={0}&units={1}&lang={2}&APPID={3}";
-        string apiId = "fef9bc1044ce8381e8b16a56d4aae8eb";
-        string locationId = "5913490";
+        string apiId = "";
+        string locationId = "";
         string units = "metric";
         string language = "en";
         public WeatherController (IConfiguration Configuration)
