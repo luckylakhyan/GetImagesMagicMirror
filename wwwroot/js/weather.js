@@ -33,6 +33,7 @@
             setTimeout('Getweather()', 600000);
         }, error: function (data) {
             console.log("weather script error data", data);
+            setTimeout("Getweather()", 1000);
         }
     });
 }
@@ -67,6 +68,7 @@ function GetweatherForecast() {
             setTimeout('GetweatherForecast()', 600000);
         }, error: function (data) {
             console.log("weather script error data", data);
+            setTimeout("GetweatherForecast()", 1000);
         }
     });
 }

@@ -107,17 +107,31 @@
 <script>
 
     function PhotoRefresh() {
-        $.get("/home/GetImageUrl", function (data, status) {
-            resultt = data;
+        try {
 
-            var idivback = document.getElementById("NassPhoto_back");
-            var idivmain = document.getElementById("NassPhoto_main");
-            var info = document.getElementById("pictimestamp");
-            idivback.style.backgroundImage = "url('" + resultt.result + "')";
-            idivmain.style.backgroundImage = "url('" + resultt.result + "')";
-            info.innerHTML = resultt.datetaken;
-            setTimeout("PhotoRefresh()", 20000);
-        });
+            $.ajax({
+                type: "GET",
+                contentType: 'application/json; charset=utf-8',
+                url: "/home/GetImageUrl",
+                datatype: 'json',
+                success: function (data, status) {
+                    resultt = data;
+
+                    var idivback = document.getElementById("NassPhoto_back");
+                    var idivmain = document.getElementById("NassPhoto_main");
+                    var info = document.getElementById("pictimestamp");
+                    idivback.style.backgroundImage = "url('" + resultt.result + "')";
+                    idivmain.style.backgroundImage = "url('" + resultt.result + "')";
+                    info.innerHTML = resultt.datetaken;
+                    setTimeout("PhotoRefresh()", 20000);
+                }, error: function (data) {
+                    setTimeout("PhotoRefresh()", 1000);
+                }
+            });
+        } catch (e) {
+            setTimeout("PhotoRefresh()", 1000);
+        }
+
     }
     function ClockShow() {
 

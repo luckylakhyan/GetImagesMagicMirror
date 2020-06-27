@@ -60,6 +60,7 @@ function GetEvents() {
         },
         Error: function (data) {
             console.log(data);
+            setTimeout("GetEvents()", 1000);
         }
     });
 }
