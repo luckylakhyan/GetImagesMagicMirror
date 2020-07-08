@@ -1,5 +1,7 @@
 ﻿
 function GetNewsFeed() {
+    try {
+
     $.ajax({
         type: "GET",
         contentType: 'application/json; charset=utf-8',
@@ -16,4 +18,8 @@ function GetNewsFeed() {
             console.log(data);
         }
     });
+    } catch (e) {
+        setTimeout("GetNewsFeed()", 30000);
+    }
+
 }

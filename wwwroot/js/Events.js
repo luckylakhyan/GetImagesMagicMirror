@@ -40,9 +40,7 @@ function GetEvents() {
                 
                 var eventTime = eventcompTime.length>1?eventcompTime[1].split(':'):'  :  :  :'.split(':');
                 var eventPeriod = eventcompTime.length>1?eventcompTime[2]:' ';
-                if (eventPeriod == "PM") {
-                    eventTime[0] = parseInt(eventTime[0]) + 12;
-                }
+                
                 if (eventTime[0].length < 2) {
                     eventTime[0] = '0' + eventTime[0];
                 }

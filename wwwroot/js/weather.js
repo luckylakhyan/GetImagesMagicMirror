@@ -6,8 +6,6 @@
         datatype: 'json',
         success: function (data, status) {
             var result = JSON.parse(data);
-            
-
             var weatherfeelslike = document.getElementById("weatherfeelslike");
             weatherfeelslike.innerHTML = result.main.feels_like.toFixed(0) + "°";
 
@@ -25,7 +23,11 @@
             weatherwindDir.innerHTML = winddirecti;
 
             var weatherweathericon = document.getElementById("weatherweathericon");
-            var weatherweathericonclass = WeatherIconClass(result.weather[0].icon);
+         
+            var weatherweathericonclass = WeatherIconClass(result.weather[0].id);
+          
+            var weathericonimage = document.getElementById("weathericonimage");
+            $(weathericonimage).attr("src", "../images/weathericons/climacon-" + weatherweathericonclass + ".svg");
             $(weatherweathericon).addClass(weatherweathericonclass);
 
             SumTimes(result.sys.sunset, result.sys.sunrise);
@@ -45,22 +47,22 @@ function GetweatherForecast() {
         datatype: 'json',
         success: function (data, status) {
             var wdata = JSON.parse(data);
-            
-           
+            console.log("wdata", wdata);
             var headerhtml = "Weather Forcast for " + wdata.city.name + ", " + wdata.city.country;
             var weatherforecastheadere = document.getElementById("weatherforecastheadere");
             weatherforecastheadere.innerHTML = headerhtml;
 
             var wftable = document.getElementById("weatherforecasttable");
-            wftable.innerHTML ="";
+            wftable.innerHTML = "";
             weeklyforcat=processWeather(wdata);
             var opecityvar = 2;
             for (var i = 0; i < weeklyforcat.length; i++) {
                 var weatherdata = weeklyforcat[i];
+                
                  var htmltext = '<tr style="opacity: ' + opecityvar / i + ';">' +
-                    '<td class="day">' + weatherdata.day + '</td>' +
-                    '<td class="bright weather-icon"><span class="wi weathericon ' + WeatherIconClass(weatherdata.icon) +'"></span></td>' +
-                    '<td class="align-right bright max-temp">' + weatherdata.maxTemp.toFixed(0) + '°</td>' +
+                     '<td class="day">' + weatherdata.day + '</td>' +
+                     '<td class="bright weather-icon"><div class="wi weathericonforeCast"><img id="weathericonimage" src="../images/weathericons/climacon-' + WeatherIconClass(weatherdata.icon) + '.svg" class="weathericonimage"/> </div></td>' +
+                     '<td class="align-right bright max-temp">' + weatherdata.maxTemp.toFixed(0) + '°</td>' +
                     '<td class="align-right min-temp">' + weatherdata.minTemp.toFixed(0) + '°</td></tr>';
                 wftable.innerHTML += htmltext;
             }
@@ -81,10 +83,8 @@ function processWeather(data) {
     var forecastData = {};
 
     for (var i = 0, count = data.list.length; i < count; i++) {
-
         var forecast = data.list[i];
         parserDataWeather(forecast); // hack issue #1017
-
         var day;
         var hour;
         if (!!forecast.dt_txt) {
@@ -98,7 +98,7 @@ function processWeather(data) {
         if (day !== lastDay) {
             var forecastData = {
                 day: day,
-                icon: forecast.weather[0].icon,
+                icon: forecast.weather[0].id,
                 maxTemp: forecast.temp.max,
                 minTemp:forecast.temp.min,
                 rain: this.processRain(forecast, data.list)
@@ -120,7 +120,7 @@ function processWeather(data) {
             // Since we don't want an icon from the start of the day (in the middle of the night)
             // we update the icon as long as it's somewhere during the day.
             if (hour >= 8 && hour <= 17) {
-                forecastData.icon = forecast.weather[0].icon;
+                forecastData.icon = forecast.weather[0].id;
             }
         }
     }
@@ -217,6 +217,116 @@ function WeatherWindDirection(degrees) {
 function WeatherIconClass(weathericon) {
     var returnClass = ""
     switch (weathericon) {
+        case  200 : returnClass = "cloud_lightning_sun"; break;
+        case  201 : returnClass = "cloud_lightning_sun"; break;
+        case  202 : returnClass = "cloud_lightning_sun"; break;
+        case  210 : returnClass = "cloud_lightning_sun"; break;
+        case  211 : returnClass = "cloud_lightning_sun"; break;
+        case  212 : returnClass = "cloud_lightning_sun"; break;
+        case  221 : returnClass = "cloud_lightning_sun"; break;
+        case  230 : returnClass = "cloud_lightning_sun"; break;
+        case  231 : returnClass = "cloud_lightning_sun"; break;
+        case  232 : returnClass = "cloud_lightning_sun"; break;
+        case  300 : returnClass = "cloud_drizzle_sun"; break;
+        case  301 : returnClass = "cloud_drizzle_sun"; break;
+        case  302 : returnClass = "cloud_drizzle_sun"; break;
+        case  310 : returnClass = "cloud_drizzle_sun"; break;
+        case  311 : returnClass = "cloud_drizzle_sun"; break;
+        case  312 : returnClass = "cloud_drizzle_sun"; break;
+        case  313 : returnClass = "cloud_drizzle_sun"; break;
+        case  314 : returnClass = "cloud_drizzle_sun"; break;
+        case  321 : returnClass = "cloud_drizzle_sun"; break;
+        case  500 : returnClass = "cloud_rain_sun"; break;
+        case  501 : returnClass = "cloud_rain_sun"; break;
+        case  502 : returnClass = "cloud_rain_sun"; break;
+        case  503 : returnClass = "cloud_rain_sun"; break;
+        case  504 : returnClass = "cloud_rain_sun"; break;
+        case  511 : returnClass = "cloud_hail_sun"; break;
+        case  520 : returnClass = "cloud_rain_alt_sun"; break;
+        case  521 : returnClass = "cloud_rain_alt_sun"; break;
+        case  522 : returnClass = "cloud_rain_alt_sun"; break;
+        case  531 : returnClass = "cloud_rain_alt_sun"; break;
+        case  600 : returnClass = "cloud_snow_sun"; break;
+        case  601 : returnClass = "cloud_snow_alt_sun"; break;
+        case  602 : returnClass = "cloud_snow_alt_sun"; break;
+        case  611 : returnClass = "cloud_hail_alt_sun"; break;
+        case  612 : returnClass = "cloud_hail_alt_sun"; break;
+        case  615 : returnClass = "cloud_hail_alt_sun"; break;
+        case  616 : returnClass = "cloud_hail_alt_sun"; break;
+        case  620 : returnClass = "cloud_snow_sun"; break;
+        case  621 : returnClass = "cloud_snow_sun"; break;
+        case  622 : returnClass = "cloud_snow_alt_sun"; break;
+        case  701 : returnClass = "cloud_fog_sun"; break;
+        case  711 : returnClass = "cloud_fog_alt_sun"; break;
+        case  721 : returnClass = "cloud_fog_sun"; break;
+        case  731 : returnClass = "tornado"; break;
+        case  741 : returnClass = "cloud_fog_sun"; break;
+        case  751 : returnClass = "cloud_fog_alt_sun"; break;
+        case  761 : returnClass = "cloud_fog_alt_sun"; break;
+        case  762 : returnClass = "cloud_fog_alt_sun"; break;
+        case  771 : returnClass = "cloud_fog_alt_sun"; break;
+        case  781 : returnClass = "tornado"; break;
+        case  800 : returnClass = "sun"; break;
+        case  801 : returnClass = "cloud_sun"; break;
+        case  802 : returnClass = "cloud_sun"; break;
+        case  803 : returnClass = "cloud_sun"; break;
+        case  804 : returnClass = "cloud_sun"; break;
+        case  200 : returnClass = "cloud_lightning_moon"; break;
+        case  201 : returnClass = "cloud_lightning_moon"; break;
+        case  202 : returnClass = "cloud_lightning_moon"; break;
+        case  210 : returnClass = "cloud_lightning_moon"; break;
+        case  211 : returnClass = "cloud_lightning_moon"; break;
+        case  212 : returnClass = "cloud_lightning_moon"; break;
+        case  221 : returnClass = "cloud_lightning_moon"; break;
+        case  230 : returnClass = "cloud_lightning_moon"; break;
+        case  231 : returnClass = "cloud_lightning_moon"; break;
+        case  232 : returnClass = "cloud_lightning_moon"; break;
+        case  300 : returnClass = "cloud_drizzle_moon"; break;
+        case  301 : returnClass = "cloud_drizzle_moon"; break;
+        case  302 : returnClass = "cloud_drizzle_moon"; break;
+        case  310 : returnClass = "cloud_drizzle_moon"; break;
+        case  311 : returnClass = "cloud_drizzle_moon"; break;
+        case  312 : returnClass = "cloud_drizzle_moon"; break;
+        case  313 : returnClass = "cloud_drizzle_moon"; break;
+        case  314 : returnClass = "cloud_drizzle_moon"; break;
+        case  321 : returnClass = "cloud_drizzle_moon"; break;
+        case  500 : returnClass = "cloud_rain_moon"; break;
+        case  501 : returnClass = "cloud_rain_moon"; break;
+        case  502 : returnClass = "cloud_rain_moon"; break;
+        case  503 : returnClass = "cloud_rain_moon"; break;
+        case  504 : returnClass = "cloud_rain_moon"; break;
+        case  511 : returnClass = "cloud_hail_moon"; break;
+        case  520 : returnClass = "cloud_rain_alt_moon"; break;
+        case  521 : returnClass = "cloud_rain_alt_moon"; break;
+        case  522 : returnClass = "cloud_rain_alt_moon"; break;
+        case  531 : returnClass = "cloud_rain_alt_moon"; break;
+        case  600 : returnClass = "cloud_snow_moon"; break;
+        case  601 : returnClass = "cloud_snow_alt_moon"; break;
+        case  602 : returnClass = "cloud_snow_alt_moon"; break;
+        case  611 : returnClass = "cloud_hail_alt_moon"; break;
+        case  612 : returnClass = "cloud_hail_alt_moon"; break;
+        case  615 : returnClass = "cloud_hail_alt_moon"; break;
+        case  616 : returnClass = "cloud_hail_alt_moon"; break;
+        case  620 : returnClass = "cloud_snow_moon"; break;
+        case  621 : returnClass = "cloud_snow_moon"; break;
+        case  622 : returnClass = "cloud_snow_alt_moon"; break;
+        case  701 : returnClass = "cloud_fog_moon"; break;
+        case  711 : returnClass = "cloud_fog_alt_moon"; break;
+        case  721 : returnClass = "cloud_fog_moon"; break;
+        case  731 : returnClass = "tornado"; break;
+        case  741 : returnClass = "cloud_fog_moon"; break;
+        case  751 : returnClass = "cloud_fog_alt_moon"; break;
+        case  761 : returnClass = "cloud_fog_alt_moon"; break;
+        case  762 : returnClass = "cloud_fog_alt_moon"; break;
+        case  771 : returnClass = "cloud_fog_alt_moon"; break;
+        case  781 : returnClass = "tornado"; break;
+        case  800 : returnClass = "moon"; break;
+        case  801 : returnClass = "cloud_`moon"; break;
+        case  802 : returnClass = "cloud_moon"; break;
+        case  803 : returnClass = "cloud_moon"; break;
+        case  804 : returnClass = "cloud_moon"; break;
+
+
 
         case "01d": returnClass = "wi-day-sunny"; break;
         case "02d": returnClass = "wi-day-cloudy"; break;
@@ -236,6 +346,7 @@ function WeatherIconClass(weathericon) {
         case "11n": returnClass = "wi-night-thunderstorm"; break;
         case "13n": returnClass = "wi-night-snow"; break;
         case "50n": returnClass = "wi-night-alt-cloudy-windy"; break;
+
     }
 
     return returnClass;

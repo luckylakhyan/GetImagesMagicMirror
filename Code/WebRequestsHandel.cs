@@ -25,7 +25,7 @@ namespace TinnyMagicMiror.Code
                     foreach (var item in caleves)
                     {
                         eventsJson.Append(delimiter);
-                        eventsJson.Append($"{{'EventTitle':'{((Ical.Net.CalendarEvent)item.Source).Summary}','StartTime':'{item.Period.StartTime.AsSystemLocal}'}}");
+                        eventsJson.Append($"{{'EventTitle':'{((Ical.Net.CalendarEvent)item.Source).Summary}','StartTime':'{item.Period.StartTime.AsSystemLocal.ToString("yyyy-MM-dd HH:mm tt")}'}}");
                         delimiter = ",";
 
 
