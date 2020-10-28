@@ -11,21 +11,25 @@ namespace TinnyMagicMiror.Code
     public static class WebRequestsHandel
     {
         public static string GetCalanderEvents(string calurl, string delimiter)
-        {
+        {   
+            var eventsJson = new StringBuilder();
+            try
+            {
+
             WebClient client = new WebClient();
             string reply = client.DownloadString(calurl);
             if (!string.IsNullOrEmpty(reply))
             {
                 var calendar = Calendar.Load(reply);
                 var caleves = calendar.GetOccurrences(DateTime.Now, DateTime.Now.AddDays(15));
-                var eventsJson = new StringBuilder();
+               
 
                 if (caleves.Count > 0)
                 {
                     foreach (var item in caleves)
                     {
                         eventsJson.Append(delimiter);
-                        eventsJson.Append($"{{'EventTitle':'{((Ical.Net.CalendarEvent)item.Source).Summary}','StartTime':'{item.Period.StartTime.AsSystemLocal.ToString("yyyy-MM-dd HH:mm tt")}'}}");
+                        eventsJson.Append($"{{'EventTitle':'{((Ical.Net.CalendarEvent)item.Source).Summary}','StartTime':'{item.Period.StartTime.AsSystemLocal.ToString("yyyy-MM-dd HH:mm tt")}','ErrorMessage':''}}");
                         delimiter = ",";
 
 
@@ -34,7 +38,16 @@ namespace TinnyMagicMiror.Code
                 }
 
             }
-            return ("No upcoming events found.");
+            }
+            catch (Exception ex)
+            {
+                eventsJson.Append(delimiter);
+                eventsJson.Append($"{{'EventTitle':'','StartTime':'','ErrorMessage':' Error getting event {ex.Message }'}}");
+                delimiter = ","; ;
+
+            }
+
+            return eventsJson.ToString(); 
 
         }
 
