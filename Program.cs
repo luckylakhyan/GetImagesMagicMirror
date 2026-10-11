@@ -26,10 +26,10 @@ namespace GetImage
                     webBuilder.UseStartup<Startup>();
                     if (!isDevelopment)
                     {
-                        webBuilder.UseKestrel(opts =>
-                        {
-                            opts.ListenAnyIP(8085);
-                        });
+                        //webBuilder.UseKestrel(opts =>
+                        //{
+                        //    opts.ListenAnyIP(8085);
+                        //});
                     }
                 });
     }
